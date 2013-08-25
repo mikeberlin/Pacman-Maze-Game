@@ -1,16 +1,16 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPhone.6.1" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Maze.iOS/ViewController/AppViewController.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Jurrasic 5" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Maze.iOS/Info.plist">
     <Files>
-      <File FileName="Maze.iOS/ViewController/AppViewController.cs" Line="27" Column="21" />
+      <File FileName="Maze.iOS/ViewController/AppViewController.cs" Line="1" Column="1" />
+      <File FileName="Maze.iOS/Info.plist" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Maze.iOS" expanded="True">
-            <Node name="ViewController" expanded="True">
-              <Node name="AppViewController.xib" selected="True" />
-            </Node>
+            <Node name="ViewController" expanded="True" />
+            <Node name="Info.plist" selected="True" />
           </Node>
         </State>
       </Pad>
