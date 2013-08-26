@@ -14,8 +14,6 @@
 	<string>6.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>Maze</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
 	<key>UIStatusBarHidden</key>
 	<true/>
 	<key>CFBundleIconFiles</key>
@@ -29,5 +27,7 @@
 	</array>
 	<key>CFBundleIdentifier</key>
 	<string>com.bernstein-rein.Maze</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
 </dict>
 </plist>
