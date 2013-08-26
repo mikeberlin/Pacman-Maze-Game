@@ -11,14 +11,13 @@ namespace Maze.iOS
 	{
 		private const float UPDATE_INTERVAL = (1.0f / 60.0f);
 
-		private PointF CurrentPoint;
-		private PointF PreviousPoint;
-		private float PacmanXVelocity;
-		private float PacmanYVelocity;
-		private float Angle;
-		private CMAcceleration Acceleration;
-		private CMMotionManager MotionManager;
-		private DateTime LastUpdateTime;
+		private PointF _currentPoint;
+		private float _pacmanXVelocity;
+		private float _pacmanYVelocity;
+		private float _angle;
+		private CMAcceleration _acceleration;
+		private CMMotionManager _motionManager;
+		private DateTime _lastUpdateTime;
 
 		public AppViewController () : base ("AppViewController", null)
 		{
@@ -37,8 +36,8 @@ namespace Maze.iOS
 			base.ViewDidLoad ();
 			
 			// Perform any additional setup after loading the view, typically from a nib.
-			this.InitializeGhosts ();
-			this.SetupAccelerometerReading ();
+			InitializeGhosts ();
+			SetupAccelerometerReading ();
 		}
 
 		#region Private Methods
@@ -82,64 +81,55 @@ namespace Maze.iOS
 
 		private void SetupAccelerometerReading()
 		{
-			// Movement of Pacmn
-			this.LastUpdateTime = DateTime.Now;
-			this.CurrentPoint = new PointF (0, 144);
-			this.MotionManager = new CMMotionManager ();
+			// Movement of Pacman
+			_lastUpdateTime = DateTime.Now;
+			_currentPoint = new PointF (0, 144);
+			_motionManager = new CMMotionManager ();
+			_motionManager.AccelerometerUpdateInterval = UPDATE_INTERVAL;
 
-			//this.MotionManager.AccelerometerUpdateInterval = UPDATE_INTERVAL;
-
-			//this.MotionManager.StartAccelerometerUpdates (NSOperationQueue.CurrentQueue, (data, CMError) =>
-			//{
-			//	Console.WriteLine("{0}", data.Acceleration.X.ToString("0.0000000"));
-			//});
-
-			//this.MotionManager.StartAccelerometerUpdates (NSOperationQueue.CurrentQueue, (data, error) => {
-				//this.Acceleration = data.Acceleration;
-				//this.InvokeOnMainThread(UpdatePacman);
-			//});
+			_motionManager.StartAccelerometerUpdates (NSOperationQueue.CurrentQueue, (data, error) => {
+				_acceleration = data.Acceleration;
+				InvokeOnMainThread(UpdatePacman);
+			});
 		}
 
 		private void UpdatePacman()
 		{
-			int numSecondsSinceLastDraw = -(DateTime.Now - this.LastUpdateTime).Seconds;
+            double numSecondsSinceLastDraw = (DateTime.Now - _lastUpdateTime).TotalSeconds;
 
-			this.PacmanYVelocity = this.PacmanYVelocity - ((float)this.Acceleration.X * numSecondsSinceLastDraw);
-			this.PacmanXVelocity = this.PacmanXVelocity - ((float)this.Acceleration.Y * numSecondsSinceLastDraw);
+			_pacmanYVelocity = _pacmanYVelocity - (float)(_acceleration.X * numSecondsSinceLastDraw);
+			_pacmanXVelocity = _pacmanXVelocity - (float)(_acceleration.Y * numSecondsSinceLastDraw);
 
-			float xDelta = (numSecondsSinceLastDraw * this.PacmanXVelocity * 500);
-			float yDelta = (numSecondsSinceLastDraw * this.PacmanYVelocity * 500);
+			float xDelta = ((float)numSecondsSinceLastDraw * _pacmanXVelocity * 500);
+			float yDelta = ((float)numSecondsSinceLastDraw * _pacmanYVelocity * 500);
 
-			this.CurrentPoint = new PointF (this.CurrentPoint.X + xDelta, this.CurrentPoint.Y + yDelta);
+			_currentPoint = new PointF (_currentPoint.X + xDelta, _currentPoint.Y + yDelta);
 
-			this.MovePacman ();
-			this.LastUpdateTime = DateTime.Now;
+			MovePacman ();
+			_lastUpdateTime = DateTime.Now;
 		}
 
 		private void MovePacman()
 		{
-			this.PreviousPoint = this.CurrentPoint;
-
-			RectangleF frame = this.pacman.Frame;
-			frame.X = this.CurrentPoint.X;
-			frame.Y = this.CurrentPoint.Y;
-
-			this.pacman.Frame = frame;
+			RectangleF frame = pacman.Frame;
+			frame.X = _currentPoint.X;
+			frame.Y = _currentPoint.Y;
+			pacman.Frame = frame;
 
 			// Rotate the sprite
-			float newAngle = (this.PacmanXVelocity + this.PacmanYVelocity) * (float)Math.PI * 4;
-			this.Angle += newAngle * UPDATE_INTERVAL;
+			float newAngle = (_pacmanXVelocity + _pacmanYVelocity) * (float)Math.PI * 4;
+			_angle += newAngle * UPDATE_INTERVAL;
 
 			CABasicAnimation rotate = new CABasicAnimation ();
 			rotate.KeyPath = "transform.rotation";
 			rotate.From = new NSNumber (0);
-			rotate.To = new NSNumber (this.Angle);
+			rotate.To = new NSNumber (_angle);
 			rotate.Duration = UPDATE_INTERVAL;
 			rotate.RepeatCount = 1;
 			rotate.RemovedOnCompletion = false;
 			rotate.FillMode = CAFillMode.Forwards;
 
-			this.pacman.Layer.AddAnimation (rotate, "10");
+			pacman.Layer.AddAnimation (rotate, "10");
 		}
 
 		#endregion
