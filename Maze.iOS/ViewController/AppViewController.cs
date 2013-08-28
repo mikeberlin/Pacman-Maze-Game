@@ -12,6 +12,7 @@ namespace Maze.iOS
 		private const float UPDATE_INTERVAL = (1.0f / 60.0f);
 
 		private PointF _currentPoint;
+		private PointF _previousPoint;
 		private float _pacmanXVelocity;
 		private float _pacmanYVelocity;
 		private float _angle;
@@ -111,6 +112,13 @@ namespace Maze.iOS
 
 		private void MovePacman()
 		{
+			CollisionWithExit ();
+			CollisionWithGhosts ();
+			CollisionWithWalls ();
+			CollisionWithBoundaries ();
+
+			_previousPoint = _currentPoint;
+
 			RectangleF frame = pacman.Frame;
 			frame.X = _currentPoint.X;
 			frame.Y = _currentPoint.Y;
@@ -130,6 +138,87 @@ namespace Maze.iOS
 			rotate.FillMode = CAFillMode.Forwards;
 
 			pacman.Layer.AddAnimation (rotate, "10");
+		}
+
+		private void CollisionWithBoundaries()
+		{
+			if (_currentPoint.X < 0) {
+				_currentPoint.X = 0;
+				_pacmanXVelocity = -(float)(_pacmanXVelocity / 2.0);
+			}
+
+			if (_currentPoint.Y < 0) {
+				_currentPoint.Y = 0;
+				_pacmanYVelocity = -(float)(_pacmanYVelocity / 2.0);
+			}
+
+			if (_currentPoint.X > this.View.Bounds.Size.Width - pacman.Image.Size.Width) {
+				_currentPoint.X = this.View.Bounds.Size.Width - pacman.Image.Size.Width;
+				_pacmanXVelocity = -(float)(_pacmanXVelocity / 2.0);
+			}
+
+			if (_currentPoint.Y > this.View.Bounds.Size.Height - pacman.Image.Size.Height) {
+				_currentPoint.Y = this.View.Bounds.Size.Height - pacman.Image.Size.Height;
+				_pacmanYVelocity = -(float)(_pacmanYVelocity / 2.0);
+			}
+		}
+
+		private void CollisionWithExit()
+		{
+			if (pacman.Frame.IntersectsWith(exit.Frame)) {
+				_motionManager.StopAccelerometerUpdates ();
+				_pacmanXVelocity = 0;
+				_pacmanYVelocity = 0;
+
+				new UIAlertView ("Congratulations", "You've won the game!", null, "OK", null).Show ();
+			}
+		}
+
+		private void CollisionWithGhosts()
+		{
+			CALayer ghostLayer1 = ghost1.Layer.PresentationLayer;
+			CALayer ghostLayer2 = ghost2.Layer.PresentationLayer;
+			CALayer ghostLayer3 = ghost3.Layer.PresentationLayer;
+
+			if (pacman.Frame.IntersectsWith (ghostLayer1.Frame) ||
+				pacman.Frame.IntersectsWith (ghostLayer2.Frame) ||
+				pacman.Frame.IntersectsWith (ghostLayer3.Frame)) {
+
+				_currentPoint = new PointF (0, 144);
+
+				new UIAlertView ("Oops", "Mission Failed!", null, "OK", null).Show ();
+			}
+		}
+
+		private void CollisionWithWalls()
+		{
+			RectangleF frame = pacman.Frame;
+			frame.X = _currentPoint.X;
+			frame.Y = _currentPoint.Y;
+
+			foreach (UIImageView image in wall) {
+
+				if (frame.IntersectsWith (image.Frame)) {
+					// Compute collision angle
+					PointF pacmanCenter = new PointF (frame.X + (frame.Size.Width / 2),
+					                                 frame.Y + (frame.Size.Height / 2));
+
+					PointF imageCenter = new PointF (image.Frame.X + (image.Frame.Size.Width / 2),
+					                                image.Frame.Y + (image.Frame.Size.Height / 2));
+
+					float angleX = (pacmanCenter.X - imageCenter.X);
+					float angleY = (pacmanCenter.Y - imageCenter.Y);
+
+					if (Math.Abs (angleX) > Math.Abs (angleY)) {
+						_currentPoint.X = _previousPoint.X;
+						_pacmanXVelocity = -(float)(_pacmanXVelocity / 2.0);
+					} else {
+						_currentPoint.Y = _previousPoint.Y;
+						_pacmanYVelocity = -(float)(_pacmanYVelocity / 2.0);
+					}
+				}
+
+			}
 		}
 
 		#endregion
